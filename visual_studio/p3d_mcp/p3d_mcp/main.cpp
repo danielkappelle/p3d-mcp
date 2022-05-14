@@ -12,10 +12,10 @@ HRESULT hr;
 HANDLE  hSimConnect = NULL;
 PMDG_777X_Control Control;
 
-bool taxiswitch = 0;
+bool taxiswitch = 1;
 
 void connect();
-void toggle_taxi();
+void change_speed(int dir);
 void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
 
 enum DATA_REQUEST_ID {
@@ -44,11 +44,17 @@ int main()
 				sockaddr_in add = Socket.RecvFrom(buffer, sizeof(buffer));
 				std::string input(buffer);
 				std::cout << "Received " << input << std::endl;
-				toggle_taxi();
+				
+				if (input.compare("ROT:0:UP") == 0) {
+					change_speed(1);
+				}
+				else if (input.compare("ROT:0:DN") == 0) {
+					change_speed(-1);
+				}
 			}
 
 			SimConnect_CallDispatch(hSimConnect, MyDispatchProc, NULL);
-			Sleep(100);
+			Sleep(1);
         }
     }
     catch (std::system_error& e)
@@ -79,6 +85,7 @@ void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContex
 		{
 			// keep the present state of Control area to know if the server had received and reset the command
 			PMDG_777X_Control* pS = (PMDG_777X_Control*)&pObjData->dwData;
+			std::cout << "Updated control" << std::endl;
 			Control = *pS;
 			break;
 		}
@@ -142,21 +149,23 @@ void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContex
 	}
 }
 
-void toggle_taxi() {
-	//bool New_TaxiLightSwitch = !taxiswitch;
-	taxiswitch = !taxiswitch;
-
+void change_speed(int dir) {
 	// Send a command only if there is no active command request and previous command has been processed by the 777X
 	if (Control.Event == 0)
 	{
-		Control.Event = EVT_OH_LIGHTS_TAXI;		// = 69753
-		if (taxiswitch)
-			Control.Parameter = 1;
-		else
-			Control.Parameter = 0;
+		Control.Event = EVT_MCP_SPEED_SELECTOR;		// = 69753
+		if (dir > 0) {
+			Control.Parameter = MOUSE_FLAG_WHEEL_UP;
+		}
+		else {
+			Control.Parameter = MOUSE_FLAG_WHEEL_DOWN;
+		}
 		SimConnect_SetClientData(hSimConnect, PMDG_777X_CONTROL_ID, PMDG_777X_CONTROL_DEFINITION,
 			0, 0, sizeof(PMDG_777X_Control), &Control);
-			}
+	}
+	else {
+		std::cout << "Event non-zero" << std::endl;
+	}
 }
 
 void connect()
