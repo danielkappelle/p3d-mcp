@@ -16,12 +16,17 @@ bool taxiswitch = 1;
 
 void connect();
 void change_speed(int dir);
+void change_hdg(int dir);
 void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext);
 
 enum DATA_REQUEST_ID {
 	DATA_REQUEST,
 	CONTROL_REQUEST,
 	AIR_PATH_REQUEST
+};
+
+enum EVENT_ID {
+	EVENT_HDG
 };
 
 int main()
@@ -50,6 +55,12 @@ int main()
 				}
 				else if (input.compare("ROT:0:DN") == 0) {
 					change_speed(-1);
+				}
+				else if (input.compare("ROT:2:UP") == 0) {
+					change_hdg(1);
+				}
+				else if (input.compare("ROT:2:DN") == 0) {
+					change_hdg(-1);
 				}
 			}
 
@@ -168,6 +179,19 @@ void change_speed(int dir) {
 	}
 }
 
+void change_hdg(int dir) {
+	int parameter;
+	if (dir > 0) {
+		parameter = MOUSE_FLAG_WHEEL_UP;
+	}
+	else {
+		parameter = MOUSE_FLAG_WHEEL_DOWN;
+	}
+
+	SimConnect_TransmitClientEvent(hSimConnect, 0, EVENT_HDG, parameter,
+		SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+}
+
 void connect()
 {
 
@@ -199,9 +223,10 @@ void connect()
 		// Sign up for notification of control change.  
 		hr = SimConnect_RequestClientData(hSimConnect, PMDG_777X_CONTROL_ID, CONTROL_REQUEST, PMDG_777X_CONTROL_DEFINITION,
 			SIMCONNECT_CLIENT_DATA_PERIOD_VISUAL_FRAME, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED, 0, 0, 0);
-		/*
+		
 		// Second method: Create event IDs for controls that we are going to operate
-		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_LOGO_LIGHT_SWITCH, "#69748");		//EVT_OH_LIGHTS_LOGO
+		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_HDG, "#71812");		//EVT_OH_LIGHTS_LOGO
+		/*
 		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FLIGHT_DIRECTOR_SWITCH, "#69834");	//EVT_MCP_FD_SWITCH_L
 
 
