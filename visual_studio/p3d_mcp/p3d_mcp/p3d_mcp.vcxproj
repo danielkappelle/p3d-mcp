@@ -149,7 +149,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="p3d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="network.h" />

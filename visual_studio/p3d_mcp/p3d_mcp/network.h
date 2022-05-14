@@ -67,6 +67,12 @@ public:
         buffer[ret] = 0;
         return from;
     }
+    bool PacketReady() {
+        unsigned long l;
+        ioctlsocket(sock, FIONREAD, &l);
+        return l > 0;
+    }
+
     void Bind(unsigned short port)
     {
         sockaddr_in add;
