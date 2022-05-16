@@ -29,13 +29,21 @@ enum EVENT_ID {
 	EVENT_HDG
 };
 
+struct LastData {
+	unsigned short hdg = 0;
+};
+
+struct LastData last_data;
+
+
+WSASession Session;
+UDPSocket Socket;
+
 int main()
 {
     try
     {
 		/* Set up UDP shizzle*/
-        WSASession Session;
-        UDPSocket Socket;
         char buffer[100];
 
         Socket.Bind(3010);
@@ -74,6 +82,19 @@ int main()
     }
 }
 
+// This function is called when 777X data changes
+void Process777XData(PMDG_777X_Data* pS)
+{
+	unsigned short hdg = pS->MCP_Heading;
+	if (last_data.hdg != hdg) {
+		std::cout << "hdg changed" << std::endl;
+		last_data.hdg = hdg;
+		char cmd[20];
+		sprintf_s(cmd, "DISP:2:%d", hdg);
+		Socket.reply(cmd, sizeof(cmd));
+	}
+}
+
 void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
 {
 	switch (pData->dwID)
@@ -84,14 +105,12 @@ void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContex
 
 		switch (pObjData->dwRequestID)
 		{
-			/*
 		case DATA_REQUEST:
 		{
 			PMDG_777X_Data* pS = (PMDG_777X_Data*)&pObjData->dwData;
 			Process777XData(pS);
 			break;
 		}
-		*/
 		case CONTROL_REQUEST:
 		{
 			// keep the present state of Control area to know if the server had received and reset the command
@@ -226,24 +245,19 @@ void connect()
 		
 		// Second method: Create event IDs for controls that we are going to operate
 		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_HDG, "#71812");		//EVT_OH_LIGHTS_LOGO
+		hr = SimConnect_RequestClientData(hSimConnect, PMDG_777X_DATA_ID,
+			DATA_REQUEST, PMDG_777X_DATA_DEFINITION,
+			SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET,
+			SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED, 0, 0, 0);
 		/*
 		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FLIGHT_DIRECTOR_SWITCH, "#69834");	//EVT_MCP_FD_SWITCH_L
+
 
 
 		// 3) Request current aircraft .air file path
 		hr = SimConnect_RequestSystemState(hSimConnect, AIR_PATH_REQUEST, "AircraftLoaded");
 		// also request notifications on sim start and aircraft change
 		hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_SIM_START, "SimStart");
-
-
-		// 5) Main loop
-		while (quit == 0)
-		{
-			// receive and process the 777X data
-			SimConnect_CallDispatch(hSimConnect, MyDispatchProc, NULL);
-
-			Sleep(1);
-		}
 
 		hr = SimConnect_Close(hSimConnect);
 		*/
