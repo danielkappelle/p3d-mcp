@@ -149,8 +149,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="rotary.cpp" />
+    <ClCompile Include="p3d_connect.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="events.h" />
+    <ClInclude Include="p3d_connect.h" />
+    <ClInclude Include="rotary.h" />
     <ClInclude Include="network.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -18,9 +18,24 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rotary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p3d_connect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="network.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rotary.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="events.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="p3d_connect.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
