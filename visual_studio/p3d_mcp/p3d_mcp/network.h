@@ -1,10 +1,10 @@
+#pragma once
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <system_error>
 #include <string>
 #include <iostream>
 
-#pragma once
 
 class WSASession
 {

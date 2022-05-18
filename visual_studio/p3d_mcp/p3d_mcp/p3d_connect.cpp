@@ -4,6 +4,7 @@
 HRESULT P3dConnect::hr;
 HANDLE  P3dConnect::hSimConnect = NULL;
 PMDG_777X_Control P3dConnect::Control;
+struct LastData P3dConnect::last_data;
 
 void P3dConnect::loop() {
 	SimConnect_CallDispatch(P3dConnect::hSimConnect, P3dConnect::MyDispatchProc, NULL);
@@ -11,7 +12,46 @@ void P3dConnect::loop() {
 
 // This function is called when 777X data changes
 void P3dConnect::Process777XData(PMDG_777X_Data* pS)
-{/*
+{
+	unsigned short hdg = pS->MCP_Heading;
+	unsigned short alt = pS->MCP_Altitude;
+	unsigned short vs = pS->MCP_VertSpeed;
+	float speed = pS->MCP_IASMach;
+	bool vs_blank = pS->MCP_VertSpeedBlank;
+	bool ias_blank = pS->MCP_IASBlank;
+
+	if (P3dConnect::last_data.hdg != hdg) {
+		P3dConnect::last_data.hdg = hdg;
+		char cmd[20];
+		sprintf_s(cmd, "DISP:2:%d", hdg);
+		Socket.reply(cmd, sizeof(cmd));
+	}
+
+	if (P3dConnect::last_data.speed != speed) {
+		P3dConnect::last_data.speed = speed;
+		char cmd[20];
+		if (speed < 1) {
+			speed *= 1000;
+		}
+		sprintf_s(cmd, "DISP:1:%d", (int) speed);
+		Socket.reply(cmd, sizeof(cmd));
+	}
+
+	if (P3dConnect::last_data.alt != alt) {
+		P3dConnect::last_data.alt = alt;
+		char cmd[20];
+		sprintf_s(cmd, "DISP:4:%d", alt/10);
+		Socket.reply(cmd, sizeof(cmd));
+	}
+
+	if (P3dConnect::last_data.vs != vs) {
+		P3dConnect::last_data.vs = vs;
+		char cmd[20];
+		sprintf_s(cmd, "DISP:3:%d", vs);
+		Socket.reply(cmd, sizeof(cmd));
+	}
+
+	/*
 	unsigned short hdg = pS->MCP_Heading;
 	if (last_data.hdg != hdg) {
 		std::cout << "hdg changed" << std::endl;

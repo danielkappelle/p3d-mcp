@@ -8,12 +8,6 @@
 #include "rotary.h"
 #include "p3d_connect.h"
 
-struct LastData {
-	unsigned short hdg = 0;
-};
-
-struct LastData last_data;
-
 
 WSASession Session;
 UDPSocket Socket;
